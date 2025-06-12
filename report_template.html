@@ -1,21 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <title>内部报告</title>
-  <script>
-    // --- 开始：添加这段安全检查代码 ---
-    function checkAccess() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token'); // 检查URL中是否有'token'参数
-      const validToken = 'nihaozhelishianhao20240612'; // 设置一个非常复杂的、别人猜不到的暗号
-
-      if (token !== validToken) {
-        // 如果token不匹配，就显示“无权限”信息，并隐藏真实内容
-        document.body.innerHTML = '<h1 style="text-align: center; margin-top: 50px;">访问受限</h1><p style="text-align: center;">您没有权限查看此页面。</p>';
-        // 或者直接跳转到空白页
-        // window.location.href = 'about:blank';
-      }
-    }
+  
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>系统性能与瓶颈分析总结</title>
@@ -228,6 +214,19 @@
     </ul>
 
 </div>
+ <script>
+    // --- 开始：添加这段安全检查代码 ---
+    function checkAccess() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token'); // 检查URL中是否有'token'参数
+      const validToken = 'nihaozhelishianhao20240612'; // 设置一个非常复杂的、别人猜不到的暗号
 
+      if (token !== validToken) {
+        // 如果token不匹配，就显示“无权限”信息，并隐藏真实内容
+        document.body.innerHTML = '<h1 style="text-align: center; margin-top: 50px;">访问受限</h1><p style="text-align: center;">您没有权限查看此页面。</p>';
+        // 或者直接跳转到空白页
+        // window.location.href = 'about:blank';
+      }
+    }
 </body>
 </html>
