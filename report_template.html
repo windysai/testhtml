@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统性能与瓶颈分析总结</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        h1 {
+            text-align: center;
+            color: #1a5c9b;
+            border-bottom: 3px solid #1a5c9b;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+        .report-date {
+            text-align: center;
+            color: #888;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 0.9em;
+        }
+        h2 {
+            color: #2c77b5;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 8px;
+            margin-top: 40px;
+        }
+        h3 {
+            color: #d46b08;
+            margin-top: 25px;
+        }
+        h4 {
+            color: #005085;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style-type: disc;
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        strong {
+            color: #0d47a1;
+        }
+        .summary-section {
+            background-color: #fffbe6;
+            border: 1px solid #ffe58f;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 40px; /* 与下方内容拉开距离 */
+        }
+        .summary-section h2 { /* 摘要区的标题样式 */
+             margin-top: 0;
+             padding-bottom: 10px;
+             border-bottom: 1px solid #ffd666;
+             color: #d46b08;
+        }
+        .high-risk {
+            color: #d93026;
+            font-weight: bold;
+        }
+        .attention {
+            color: #fa8c16;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>系统性能与瓶颈分析总结</h1>
+    <p class="report-date">报告分析日期：2025-06-12</p>
+    
+    <!-- 摘要区已置顶 -->
+    <div class="summary-section">
+        <h2>总体瓶颈与重点关注</h2>
+
+        <h4><span class="high-risk">【高危瓶颈】</span>信息板接口服务内存过高</h4>
+        <ul>
+            <li><strong>现象：</strong>“信息板接口-正式”服务器内存使用率持续在90%以上，已无冗余。</li>
+            <li><strong>原因：</strong>该服务承载了每日百万级的接口调用（主要是设备心跳、节目获取等），高并发和频繁的数据交换导致内存紧张。</li>
+            <li><strong>建议：</strong>
+                <ul>
+                    <li><strong>立即排查：</strong>分析是否存在内存泄漏或不合理的缓存策略。</li>
+                    <li><strong>优化程序：</strong>优化代码，减少不必要的内存开销。</li>
+                    <li><strong>升级配置：</strong>若优化后内存仍然居高不下，应<span class="high-risk">立即升级该服务器的内存配置</span>（如从8G升至16G），以防服务因内存耗尽而崩溃。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h4><span class="high-risk">【高危瓶颈】</span>数据库性能问题</h4>
+        <ul>
+            <li><strong>现象：</strong>慢查询数量巨大、主从同步曾出现7分钟长延迟、CPU和IOPS存在尖锐峰值。</li>
+            <li><strong>原因：</strong>大量的慢SQL是根本原因，拖慢了整个数据库的响应速度，并在高并发时导致主库阻塞。</li>
+            <li><strong>建议：</strong>
+                <ul>
+                    <li><strong>SQL优化：</strong><span class="high-risk">这是最急需处理的任务</span>。开发人员需立即根据慢查询日志，对执行效率低的SQL语句进行索引优化和逻辑重构。</li>
+                    <li><strong>空间规划：</strong>关注已达70%的磁盘空间，提前规划数据清理归档或磁盘扩容方案。</li>
+                    <li><strong>错峰备份：</strong>评估将数据库备份任务调整到业务量更低的凌晨时段，以减少对白天业务的IO冲击。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h4><span class="attention">【需关注】</span>OSS下行流量成本</h4>
+        <ul>
+            <li><strong>现象：</strong>500GB/月的流量包已提前用尽，6月份正处于高价的按量付费模式。</li>
+            <li><strong>原因：</strong>常规使用量加上突发任务（如6月6日）导致流量超额。</li>
+            <li><strong>建议：</strong>
+                <ul>
+                    <li><strong>成本预警：</strong>财务和运维需知晓此情况，当月服务器成本会因此增加。</li>
+                    <li><strong>评估套餐：</strong>根据近几个月的平均用量，重新评估并购买一个更合适的、更大的下行流量包，以获得更低的单价。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h4><span class="attention">【需关注】</span>中间件Mongo服务器IO压力</h4>
+        <ul>
+            <li><strong>现象：</strong>该服务器是IO密集型服务，尤其在备份时IOPS会飙升。</li>
+            <li><strong>建议：</strong>该服务器已使用高性能的ESSD云盘(PL1)，IO能力较强。建议持续监控其IOPS和吞吐量使用率。如果未来业务增长导致IO达到当前性能级别的上限，可考虑升级到更高性能级别（如PL2/PL3）或增加容量以提升IO性能。</li>
+        </ul>
+    </div>
+
+    <!-- 详细指标分析区 -->
+    <h2>1. 服务器资源使用率 (Page 1)</h2>
+    
+    <h4>业务系统-入口管理端和信息板管理</h4>
+    <ul>
+        <li><strong>情况：</strong>CPU、内存、磁盘使用率均处于非常低的水平，资源冗余充足。</li>
+        <li><strong>结论：</strong><strong style="color: green;">运行健康</strong>。</li>
+    </ul>
+
+    <h4>业务系统-管理后端</h4>
+    <ul>
+        <li><strong>情况：</strong>CPU使用率在10-20%之间，内存占用率在40-50%之间，整体负载平稳。</li>
+        <li><strong>结论：</strong><strong style="color: green;">运行健康</strong>。</li>
+    </ul>
+
+    <h4>业务系统-入口办事窗口</h4>
+    <ul>
+        <li><strong>情况：</strong>CPU、内存、磁盘使用率均处于较低水平，资源充足。</li>
+        <li><strong>结论：</strong><strong style="color: green;">运行健康</strong>。</li>
+    </ul>
+
+    <h4>业务系统-中间件mongo</h4>
+    <ul>
+        <li><strong>情况：</strong>CPU和内存使用率稳定在较高水平（CPU约27-30%，内存约57%），符合数据库服务特征。磁盘IO是所有服务器中最高的，<span class="attention">读写吞吐量达到MB/s级别</span>，在备份期间（如6月4日、5日），IOPS峰值达到数百，远高于平时。</li>
+        <li><strong>结论：</strong><strong>运行平稳，但IO压力是重点关注对象</strong>。备份操作会对其性能产生显著影响。</li>
+    </ul>
+
+    <h4>信息板接口-正式</h4>
+    <ul>
+        <li><strong>情况：</strong>CPU使用率不高（约9%），但<span class="high-risk">内存使用率持续在90%左右</span>，已达到瓶颈。</li>
+        <li><strong>结论：</strong><span class="high-risk">存在明显内存瓶颈</span>。这是当前服务器资源最紧张的一环。</li>
+    </ul>
+
+    <h2>2. 数据库RDS资源使用率 (Page 2)</h2>
+    <ul>
+        <li><strong>CPU使用率：</strong>波动较大，在6月6日和9日出现超过70%甚至80%的峰值，表明存在周期性的高负载计算。</li>
+        <li><strong>内存使用率：</strong>稳定在37%左右，状态良好。</li>
+        <li><strong>空间使用率：</strong><span class="attention">已达到70%</span>。虽然尚未告急，但这是一个需要关注的指标，若数据持续增长，需规划扩容。</li>
+        <li><strong>IOPS使用率：</strong>在6月2日和3日出现超过80%甚至90%的峰值，备注显示与数据备份有关。这说明备份任务对数据库IO性能影响巨大。</li>
+        <li><strong>主从同步：</strong>在6月3日出现了<span class="high-risk">长达7分钟的延迟，这是一个严重告警</span>，表明当时数据库主库负载过高，导致从库同步跟不上。</li>
+        <li><strong>慢查询数量：</strong><span class="high-risk">数量非常多</span>，工作日普遍在数百甚至上千（如6月9日达到1211条）。这是导致数据库CPU峰值和延迟的<span class="high-risk">核心原因</span>。</li>
+    </ul>
+
+    <h2>3. 服务器共享流量 (Page 3)</h2>
+    <ul>
+        <li><strong>流量分布：</strong><strong>信息板</strong>是流量消耗大户，每日稳定产生约20GB的流量。其次是<strong>办事窗口</strong>，流量随业务波动。</li>
+        <li><strong>趋势：</strong>月初（如6月1日），“业务系统中间件”因定时计算报表会有流量增加，属正常现象。</li>
+    </ul>
+
+    <h2>4. OSS数据指标 (Page 4)</h2>
+    <ul>
+        <li><strong>下行流量：</strong>在6月6日出现<strong>302GB</strong>的流量高峰，远超常规，原因是省中心的临时任务。 <span class="attention">500G/月的下行流量包已在5月中旬耗尽</span>，目前6月份的流量是按量付费，成本会显著增加。</li>
+        <li><strong>存储大小：</strong>`gdtc2022-oss`存储桶的数据量持续增长，总存储量已达8T以上，体量巨大。将历史数据转为归档存储是正确的成本优化措施。</li>
+    </ul>
+
+    <h2>5. 短信发送情况 (Page 5)</h2>
+    <ul>
+        <li><strong>情况：</strong>工作日短信发送量在200-350条/天，周末则显著下降。</li>
+        <li><strong>结论：</strong>使用量平稳且不高，购买的20万条套餐包非常充足，<strong>无任何风险</strong>。</li>
+    </ul>
+
+    <h2>6. 接口访问分析 (Page 6-8)</h2>
+    <ul>
+        <li><strong>信息板接口：</strong>是整个系统访问最频繁的部分。`device_msg`, `get_program`, `login`等接口<span class="high-risk">每日访问量均高达30多万次</span>。这直接解释了“信息板接口-正式”服务器的高内存占用问题。</li>
+        <li><strong>办事窗口：</strong>`processLaunch/count`, `getJsApiTicket`, `notice/list` 等接口访问频繁，每日调用量在数万级别。</li>
+        <li><strong>业务系统：</strong>`task/runTaskList`, `_AMapService/v3/geocode/regeo` 等接口访问量较高，每日调用量在1-2万次。</li>
+    </ul>
+
+    <h2>7. WAF攻击态势 (Page 9-11)</h2>
+    <ul>
+        <li><strong>情况：</strong>业务系统和办事窗口持续遭受来自不同IP的Web攻击，每日攻击次数达数百次。</li>
+        <li><strong>结论：</strong>WAF（Web应用防火墙）运行正常，并成功阻断了大部分攻击。这表明系统面临的外部安全威胁是真实且持续的，<strong>WAF的防护至关重要</strong>。</li>
+    </ul>
+
+</div>
+
+</body>
+</html>
